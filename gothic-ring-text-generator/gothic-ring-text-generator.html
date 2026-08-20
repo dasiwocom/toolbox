@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Gothic Ring Text Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=UnifrakturMaguntia&family=Pirata+One&family=MedievalSharp&family=Cinzel:wght@400;700&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Unicase:wght@500;700&family=Almendra:wght@400;700&family=EB+Garamond&family=Eater&family=Creepster&family=Black+Ops+One&family=Rye&family=Permanent+Marker&family=Rock+Salt&family=Special+Elite&family=Nosifer&family=Smokum&family=Festive&family=Big+Shoulders+Display:wght@400;700;900&family=Oswald:wght@400;700&family=Anton&family=Metal+Mania&family=Eagle+Lake&family=Berkshire+Swash&family=Tangerine:wght@400;700&family=Yellowtail&family=Sacramento&family=Mr+Dafoe&family=Playfair+Display:wght@400;700&family=Marcellus&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  /* Local fonts unpacked from fonts/ dir */
+  @font-face { font-family: 'Gothic Leaf'; src: url('fonts/GothicLeaf-VEay.ttf') format('truetype'); }
+  @font-face { font-family: 'VTC Bad Tattoo Hand One'; src: url('fonts/VtcBadtattoohandone-83e2.ttf') format('truetype'); }
+  @font-face { font-family: 'VTC Bad Tattoo Hand One OTF'; src: url('fonts/VtcBadtattoohandone-POLx.otf') format('opentype'); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'EB Garamond', serif;
+    background: #1a1410;
+    color: #e8dcc8;
+    height: 100vh;
+    overflow: hidden;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 {
+    font-family: 'UnifrakturMaguntia', serif;
+    font-size: 34px;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #d4af37;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .panel {
+    background: #2a1f17;
+    border: 1px solid #4a3a2a;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .panel h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #d4af37;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #4a3a2a;
+    padding-bottom: 8px;
+  }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .tabs button {
+    flex: 1;
+    background: #1a1410;
+    border: 1px solid #4a3a2a;
+    color: #a89070;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .tabs button.active {
+    background: #d4af37;
+    color: #1a1410;
+    border-color: #d4af37;
+  }
+  .ring-pane { display: none; }
+  .ring-pane.active { display: block; }
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #a89070;
+    margin-bottom: 6px;
+  }
+  .field label .val { float: right; color: #d4af37; }
+  .field input[type="text"],
+  .field select,
+  .field input[type="number"] {
+    width: 100%;
+    background: #1a1410;
+    border: 1px solid #4a3a2a;
+    color: #e8dcc8;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'EB Garamond', serif;
+  }
+  /* Limit font dropdown width & height */
+  .field select.font-select {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .field select optgroup {
+    background: #1a1410;
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+    font-style: normal;
+  }
+  .field select option {
+    background: #1a1410;
+    color: #e8dcc8;
+    padding: 2px 8px;
+  }
+  .field input[type="range"] {
+    width: 100%;
+    accent-color: #d4af37;
+  }
+  .color-row { display: flex; gap: 10px; }
+  .color-row > div { flex: 1; }
+  .color-row input[type="color"] {
+    width: 100%;
+    height: 34px;
+    background: #1a1410;
+    border: 1px solid #4a3a2a;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .toggle-group {
+    display: flex;
+    gap: 6px;
+  }
+  .toggle-group button {
+    flex: 1;
+    background: #1a1410;
+    border: 1px solid #4a3a2a;
+    color: #a89070;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .toggle-group button.active {
+    background: #d4af37;
+    color: #1a1410;
+    border-color: #d4af37;
+  }
+  .enable-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #1a1410;
+    border: 1px solid #4a3a2a;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+  .enable-row span {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #d4af37;
+  }
+  .switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #4a3a2a;
+    border-radius: 24px;
+    transition: 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    top: 3px;
+    background: #e8dcc8;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .switch input:checked + .slider { background: #d4af37; }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+  .disabled-pane { opacity: 0.4; pointer-events: none; }
+  .disabled-field { opacity: 0.4; pointer-events: none; }
+  .custom-font-section {
+    background: #1a1410;
+    border: 1px dashed #6a5238;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  .custom-font-section .upload-label {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #d4af37;
+    margin-bottom: 8px;
+  }
+  .upload-row {
+    display: flex;
+    gap: 6px;
+  }
+  .upload-row input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    background: #2a1f17;
+    border: 1px solid #4a3a2a;
+    color: #e8dcc8;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'EB Garamond', serif;
+  }
+  .upload-row button {
+    background: #4a3a2a;
+    color: #e8dcc8;
+    border: 1px solid #6a5238;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .upload-row button:hover { background: #d4af37; color: #1a1410; border-color: #d4af37; }
+  .upload-row button#fontAddBtn { background: #d4af37; color: #1a1410; border-color: #d4af37; }
+  .upload-row button#fontAddBtn:hover { background: #e8c252; }
+  .upload-hint {
+    font-size: 11px;
+    color: #a89070;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .custom-font-list {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .custom-font-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #2a1f17;
+    border: 1px solid #4a3a2a;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    color: #d4af37;
+  }
+  .custom-font-item button {
+    background: transparent;
+    border: none;
+    color: #a89070;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+  }
+  .custom-font-item button:hover { color: #ff6b4a; }
+  .preview-area {
+    background: #2a1f17;
+    border: 1px solid #4a3a2a;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .preview-box {
+    background: transparent;
+    border-radius: 50%;
+    /* Fit available height while keeping square; cap at 560 */
+    width: min(560px, calc(100vh - 160px));
+    height: min(560px, calc(100vh - 160px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+  .preview-box svg { display: block; width: 100%; height: 100%; }
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-shrink: 0;
+  }
+  .actions button {
+    background: #d4af37;
+    color: #1a1410;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .actions button:hover { background: #e8c252; }
+  .actions button.secondary {
+    background: transparent;
+    color: #d4af37;
+    border: 1px solid #d4af37;
+  }
+  .actions button.secondary:hover {
+    background: #d4af37;
+    color: #1a1410;
+  }
+</style>
+</head>
+<body>
+  <h1>Gothic Ring Text Generator</h1>
+  <div class="layout">
+    <div class="panel">
+      <h2>Ring Settings</h2>
+      <div class="custom-font-section">
+        <label class="upload-label">Load Custom Font (.ttf / .otf / .woff / .woff2)</label>
+        <div class="upload-row">
+          <input type="text" id="fontName" placeholder="Font family name" value="">
+          <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2" hidden>
+          <button type="button" id="fontFileBtn">Choose File</button>
+          <button type="button" id="fontAddBtn">Add</button>
+        </div>
+        <div class="upload-hint" id="uploadHint">Premium fonts (Chicano / Placas / Ringgoth) need their font files loaded here to render.</div>
+        <div class="custom-font-list" id="customFontList"></div>
+      </div>
+      <div class="tabs">
+        <button data-tab="outer" class="active">Outer Ring</button>
+        <button data-tab="inner">Inner Ring</button>
+      </div>
+
+      <!-- Outer Ring Pane -->
+      <div class="ring-pane active" data-pane="outer">
+        <div class="field">
+          <label>Text</label>
+          <input type="text" data-ring="outer" data-key="text" value="GOTHIC CIRCLE" maxlength="80">
+        </div>
+        <div class="field">
+          <label>Font</label>
+          <select class="font-select" data-ring="outer" data-key="font"></select>
+        </div>
+        <div class="field">
+          <label>Layout</label>
+          <div class="toggle-group" data-ring="outer" data-key="layout">
+            <button data-val="letter" class="active">Per Letter</button>
+            <button data-val="arc">Arc Flow</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Radius <span class="val" data-val="outer-radius">220</span></label>
+          <input type="range" data-ring="outer" data-key="radius" min="80" max="280" value="220">
+        </div>
+        <div class="field">
+          <label>Font Size <span class="val" data-val="outer-size">48</span></label>
+          <input type="range" data-ring="outer" data-key="size" min="14" max="100" value="48">
+        </div>
+        <div class="field">
+          <label>Start Angle <span class="val" data-val="outer-angle">270°</span></label>
+          <input type="range" data-ring="outer" data-key="angle" min="0" max="359" value="270">
+        </div>
+        <div class="field" data-show="letter">
+          <label>Distribute</label>
+          <div class="toggle-group" data-ring="outer" data-key="distribute">
+            <button data-val="even" class="active">Even (360°)</button>
+            <button data-val="step">Step</button>
+          </div>
+        </div>
+        <div class="field disabled-field" data-show="letter-step">
+          <label>Letter Angle <span class="val" data-val="outer-letterAngle">25°</span></label>
+          <input type="range" data-ring="outer" data-key="letterAngle" min="2" max="90" value="25">
+        </div>
+        <div class="field">
+          <label>Letter Spacing <span class="val" data-val="outer-spacing">0</span></label>
+          <input type="range" data-ring="outer" data-key="spacing" min="-10" max="40" value="0">
+        </div>
+        <div class="field">
+          <label>Stretch X <span class="val" data-val="outer-stretchX">1.0</span></label>
+          <input type="range" data-ring="outer" data-key="stretchX" min="0.1" max="10" value="1" step="0.1">
+        </div>
+        <div class="field">
+          <label>Stretch Y <span class="val" data-val="outer-stretchY">1.0</span></label>
+          <input type="range" data-ring="outer" data-key="stretchY" min="0.1" max="10" value="1" step="0.1">
+        </div>
+        <div class="field">
+          <label>Direction</label>
+          <div class="toggle-group" data-ring="outer" data-key="direction">
+            <button data-val="cw" class="active">Clockwise</button>
+            <button data-val="ccw">Counter-CW</button>
+          </div>
+        </div>
+        <div class="field" data-show="letter">
+          <label>Orientation</label>
+          <div class="toggle-group" data-ring="outer" data-key="orientation">
+            <button data-val="up" class="active">Upright</button>
+            <button data-val="in">Inward</button>
+          </div>
+        </div>
+        <div class="field color-row">
+          <div>
+            <label>Text</label>
+            <input type="color" data-ring="outer" data-key="textColor" value="#1a1410">
+          </div>
+          <div>
+            <label>Background</label>
+            <input type="color" data-ring="outer" data-key="bgColor" value="#f5ecd7">
+          </div>
+        </div>
+        <div class="field">
+          <label>Stroke <span class="val" data-val="outer-stroke">0</span></label>
+          <input type="range" data-ring="outer" data-key="stroke" min="0" max="6" value="0" step="0.5">
+        </div>
+      </div>
+
+      <!-- Inner Ring Pane -->
+      <div class="ring-pane" data-pane="inner">
+        <div class="enable-row">
+          <span>Enable Inner Ring</span>
+          <label class="switch">
+            <input type="checkbox" id="innerEnabled">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="innerBody" class="disabled-pane">
+          <div class="field">
+            <label>Text</label>
+            <input type="text" data-ring="inner" data-key="text" value="EST MCMLXXXIV" maxlength="80">
+          </div>
+          <div class="field">
+            <label>Font</label>
+            <select class="font-select" data-ring="inner" data-key="font"></select>
+          </div>
+          <div class="field">
+            <label>Layout</label>
+            <div class="toggle-group" data-ring="inner" data-key="layout">
+              <button data-val="letter" class="active">Per Letter</button>
+              <button data-val="arc">Arc Flow</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Radius <span class="val" data-val="inner-radius">140</span></label>
+            <input type="range" data-ring="inner" data-key="radius" min="40" max="200" value="140">
+          </div>
+          <div class="field">
+            <label>Font Size <span class="val" data-val="inner-size">24</span></label>
+            <input type="range" data-ring="inner" data-key="size" min="10" max="60" value="24">
+          </div>
+          <div class="field">
+            <label>Start Angle <span class="val" data-val="inner-angle">90°</span></label>
+            <input type="range" data-ring="inner" data-key="angle" min="0" max="359" value="90">
+          </div>
+          <div class="field" data-show="letter">
+            <label>Distribute</label>
+            <div class="toggle-group" data-ring="inner" data-key="distribute">
+              <button data-val="even" class="active">Even (360°)</button>
+              <button data-val="step">Step</button>
+            </div>
+          </div>
+          <div class="field disabled-field" data-show="letter-step">
+            <label>Letter Angle <span class="val" data-val="inner-letterAngle">25°</span></label>
+            <input type="range" data-ring="inner" data-key="letterAngle" min="2" max="90" value="25">
+          </div>
+          <div class="field">
+            <label>Letter Spacing <span class="val" data-val="inner-spacing">0</span></label>
+            <input type="range" data-ring="inner" data-key="spacing" min="-10" max="40" value="0">
+          </div>
+          <div class="field">
+            <label>Stretch X <span class="val" data-val="inner-stretchX">1.0</span></label>
+            <input type="range" data-ring="inner" data-key="stretchX" min="0.3" max="3" value="1" step="0.05">
+          </div>
+          <div class="field">
+            <label>Stretch Y <span class="val" data-val="inner-stretchY">1.0</span></label>
+            <input type="range" data-ring="inner" data-key="stretchY" min="0.3" max="3" value="1" step="0.05">
+          </div>
+          <div class="field">
+            <label>Direction</label>
+            <div class="toggle-group" data-ring="inner" data-key="direction">
+              <button data-val="cw">Clockwise</button>
+              <button data-val="ccw" class="active">Counter-CW</button>
+            </div>
+          </div>
+          <div class="field" data-show="letter">
+            <label>Orientation</label>
+            <div class="toggle-group" data-ring="inner" data-key="orientation">
+              <button data-val="up">Upright</button>
+              <button data-val="in" class="active">Inward</button>
+            </div>
+          </div>
+          <div class="field color-row">
+            <div>
+              <label>Text</label>
+              <input type="color" data-ring="inner" data-key="textColor" value="#1a1410">
+            </div>
+            <div>
+              <label>Background</label>
+              <input type="color" data-ring="inner" data-key="bgColor" value="#f5ecd7">
+            </div>
+          </div>
+          <div class="field">
+            <label>Stroke <span class="val" data-val="inner-stroke">0</span></label>
+            <input type="range" data-ring="inner" data-key="stroke" min="0" max="6" value="0" step="0.5">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <div class="preview-box" id="previewBox">
+        <svg id="svg" width="560" height="560" viewBox="0 0 560 560"></svg>
+      </div>
+      <div class="actions">
+        <button id="downloadPng">Download PNG</button>
+        <button id="downloadSvg" class="secondary">Download SVG</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  const $ = id => document.getElementById(id);
+  const svg = $('svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const SIZE = 560;
+  const CENTER = SIZE / 2;
+
+  // Font catalog: local first, then premium chicano, then Google Fonts
+  // Premium fonts require self-hosted files; use the custom font loader below to register them.
+  const FONT_GROUPS = [
+    {
+      label: 'Local',
+      fonts: ['Gothic Leaf', 'VTC Bad Tattoo Hand One', 'VTC Bad Tattoo Hand One OTF']
+    },
+    {
+      label: 'Premium Chicano / Blackletter',
+      fonts: ['Chicano Condensed Blackletter', 'Placas Condensed', 'Ringgoth Condensed']
+    },
+    {
+      label: 'Gothic Blackletter',
+      fonts: ['UnifrakturCook', 'UnifrakturMaguntia']
+    },
+    {
+      label: 'Medieval',
+      fonts: ['Pirata One', 'MedievalSharp', 'Almendra', 'Cinzel Decorative', 'Cinzel']
+    },
+    {
+      label: 'Tattoo / Chicano',
+      fonts: ['Permanent Marker', 'Rock Salt', 'Rye', 'Black Ops One', 'Metal Mania']
+    },
+    {
+      label: 'Horror',
+      fonts: ['Eater', 'Creepster', 'Nosifer']
+    },
+    {
+      label: 'Fancy Script',
+      fonts: ['Eagle Lake', 'Berkshire Swash', 'Tangerine', 'Yellowtail', 'Sacramento', 'Mr Dafoe']
+    },
+    {
+      label: 'Condensed Gothic',
+      fonts: ['Big Shoulders Display', 'Oswald', 'Anton']
+    },
+    {
+      label: 'Serif',
+      fonts: ['Playfair Display', 'Marcellus', 'DM Serif Display']
+    },
+    {
+      label: 'Decorative',
+      fonts: ['Cormorant Unicase', 'Special Elite', 'Festive', 'Smokum']
+    }
+  ];
+
+  // Populate both font selects with short labels (keeps dropdown narrow)
+  document.querySelectorAll('select.font-select').forEach(sel => {
+    FONT_GROUPS.forEach(group => {
+      const og = document.createElement('optgroup');
+      og.label = group.label;
+      group.fonts.forEach(name => {
+        const o = document.createElement('option');
+        o.value = name;
+        o.textContent = name;
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    });
+  });
+
+  // ---- Custom font loader ----
+  // Registered custom fonts: { name: dataUrl }
+  const customFonts = {};
+  let pendingFontFile = null;
+
+  const fontFileInput = $('fontFile');
+  const fontNameInput = $('fontName');
+  const fontFileBtn = $('fontFileBtn');
+  const fontAddBtn = $('fontAddBtn');
+  const customFontList = $('customFontList');
+
+  // Strip extension from filename to suggest a font-family name
+  function basenameWithoutExt(name) {
+    return name.replace(/\.[^.]+$/, '');
+  }
+
+  fontFileBtn.addEventListener('click', () => fontFileInput.click());
+
+  fontFileInput.addEventListener('change', () => {
+    const file = fontFileInput.files && fontFileInput.files[0];
+    if (!file) return;
+    pendingFontFile = file;
+    if (!fontNameInput.value.trim()) {
+      fontNameInput.value = basenameWithoutExt(file.name);
+    }
+  });
+
+  function renderCustomFontList() {
+    customFontList.innerHTML = '';
+    Object.keys(customFonts).forEach(name => {
+      const item = document.createElement('div');
+      item.className = 'custom-font-item';
+      const label = document.createElement('span');
+      label.textContent = '✓ ' + name;
+      const rm = document.createElement('button');
+      rm.textContent = '×';
+      rm.title = 'Remove';
+      rm.addEventListener('click', () => {
+        delete customFonts[name];
+        // Remove option from both selects
+        document.querySelectorAll('select.font-select').forEach(sel => {
+          Array.from(sel.querySelectorAll('option')).forEach(opt => {
+            if (opt.value === name && opt.parentElement && opt.parentElement.label === 'Custom (Loaded)') {
+              opt.remove();
+            }
+          });
+          // Clean empty Custom optgroup
+          const customOg = Array.from(sel.querySelectorAll('optgroup')).find(og => og.label === 'Custom (Loaded)');
+          if (customOg && customOg.children.length === 0) customOg.remove();
+        });
+        renderCustomFontList();
+        render();
+      });
+      item.appendChild(label);
+      item.appendChild(rm);
+      customFontList.appendChild(item);
+    });
+  }
+
+  fontAddBtn.addEventListener('click', () => {
+    const name = fontNameInput.value.trim();
+    if (!name) { alert('Please enter a font family name.'); return; }
+    if (!pendingFontFile) { alert('Please choose a font file first.'); return; }
+    const file = pendingFontFile;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      const ext = (file.name.split('.').pop() || 'ttf').toLowerCase();
+      const mimeMap = { ttf: 'font/ttf', otf: 'font/otf', woff: 'font/woff', woff2: 'font/woff2' };
+      const mime = mimeMap[ext] || 'font/ttf';
+      // Inject @font-face rule
+      const style = document.createElement('style');
+      style.textContent = `@font-face { font-family: '${name}'; src: url('${dataUrl}') format('${ext === 'woff2' ? 'woff2' : ext === 'woff' ? 'woff' : ext === 'otf' ? 'opentype' : 'truetype'}'); }`;
+      document.head.appendChild(style);
+      customFonts[name] = dataUrl;
+      // Add option to both selects under a Custom (Loaded) group
+      document.querySelectorAll('select.font-select').forEach(sel => {
+        let customOg = Array.from(sel.querySelectorAll('optgroup')).find(og => og.label === 'Custom (Loaded)');
+        if (!customOg) {
+          customOg = document.createElement('optgroup');
+          customOg.label = 'Custom (Loaded)';
+          sel.appendChild(customOg);
+        }
+        // Avoid duplicates
+        if (!Array.from(customOg.querySelectorAll('option')).some(o => o.value === name)) {
+          const o = document.createElement('option');
+          o.value = name;
+          o.textContent = name;
+          customOg.appendChild(o);
+        }
+      });
+      // Reset inputs
+      fontNameInput.value = '';
+      fontFileInput.value = '';
+      pendingFontFile = null;
+      renderCustomFontList();
+      // Wait for font to load then re-render
+      if (document.fonts && document.fonts.load) {
+        document.fonts.load(`48px '${name}'`).then(render).catch(render);
+      } else {
+        setTimeout(render, 500);
+      }
+    };
+    reader.onerror = () => alert('Failed to read font file.');
+    reader.readAsDataURL(file);
+  });
+  renderCustomFontList();
+
+  const ringState = {
+    outer: {
+      text: 'GOTHIC CIRCLE',
+      font: 'UnifrakturCook',
+      layout: 'letter',
+      radius: 220,
+      size: 48,
+      angle: 270,
+      distribute: 'even',
+      letterAngle: 25,
+      spacing: 0,
+      stretchX: 1,
+      stretchY: 1,
+      direction: 'cw',
+      orientation: 'up',
+      textColor: '#1a1410',
+      bgColor: '#f5ecd7',
+      stroke: 0
+    },
+    inner: {
+      enabled: false,
+      text: 'EST MCMLXXXIV',
+      font: 'Cinzel',
+      layout: 'letter',
+      radius: 140,
+      size: 24,
+      angle: 90,
+      distribute: 'even',
+      letterAngle: 25,
+      spacing: 0,
+      stretchX: 1,
+      stretchY: 1,
+      direction: 'ccw',
+      orientation: 'in',
+      textColor: '#1a1410',
+      bgColor: '#f5ecd7',
+      stroke: 0
+    }
+  };
+
+  // Sync each font select's displayed value with ringState defaults.
+  // Without this the dropdown shows the first option (Gothic Leaf) while
+  // rendering uses the state value, causing the mismatch you noticed.
+  document.querySelectorAll('select.font-select').forEach(sel => {
+    sel.value = ringState[sel.dataset.ring].font;
+  });
+
+  // Render one ring as per-letter rotation placement
+  function renderRingLetter(cfg) {
+    const r = Math.max(10, cfg.radius);
+    const text = (cfg.text || '').trim();
+    if (!text) return;
+
+    const chars = text.split('');
+    const n = chars.length;
+    let angleStep;
+    if (cfg.distribute === 'even') {
+      angleStep = 360 / n;
+    } else {
+      angleStep = cfg.letterAngle;
+    }
+
+    const group = document.createElementNS(NS, 'g');
+    group.setAttribute('font-family', `'${cfg.font}', serif`);
+    group.setAttribute('font-size', cfg.size);
+    group.setAttribute('fill', cfg.textColor);
+    if (cfg.stroke > 0) {
+      group.setAttribute('stroke', cfg.textColor);
+      group.setAttribute('stroke-width', cfg.stroke);
+      group.setAttribute('paint-order', 'stroke');
+      group.setAttribute('stroke-linejoin', 'round');
+    }
+    group.setAttribute('text-anchor', 'middle');
+    group.setAttribute('dominant-baseline', 'central');
+
+    chars.forEach((ch, i) => {
+      let deg;
+      if (cfg.direction === 'cw') {
+        deg = cfg.angle + i * angleStep;
+      } else {
+        deg = cfg.angle - i * angleStep;
+      }
+      const rad = deg * Math.PI / 180;
+      const x = CENTER + r * Math.cos(rad);
+      const y = CENTER + r * Math.sin(rad);
+
+      const tangentRad = rad + (cfg.direction === 'cw' ? Math.PI/2 : -Math.PI/2);
+      const sx = x + cfg.spacing * Math.cos(tangentRad);
+      const sy = y + cfg.spacing * Math.sin(tangentRad);
+
+      let rotation;
+      if (cfg.orientation === 'up') {
+        rotation = 0;
+      } else {
+        rotation = cfg.direction === 'cw' ? deg + 90 : deg - 90;
+      }
+
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', sx);
+      t.setAttribute('y', sy);
+      // Combine rotation + scale around the letter center (sx, sy).
+      // Order: translate to center → rotate → scale → translate back.
+      // This stretches the letter along its own axes (after rotation),
+      // so Stretch X follows the letter's horizontal axis and Stretch Y its vertical axis.
+      const sX = cfg.stretchX;
+      const sY = cfg.stretchY;
+      let transform;
+      if (Math.abs(sX - 1) < 0.001 && Math.abs(sY - 1) < 0.001) {
+        transform = `rotate(${rotation} ${sx} ${sy})`;
+      } else {
+        transform = `translate(${sx} ${sy}) rotate(${rotation}) scale(${sX} ${sY}) translate(${-sx} ${-sy})`;
+      }
+      t.setAttribute('transform', transform);
+      t.textContent = ch === ' ' ? '\u00A0' : ch;
+      group.appendChild(t);
+    });
+
+    svg.appendChild(group);
+  }
+
+  // Render one ring as a continuous arc using textPath (letters flow along the circle)
+  function renderRingArc(cfg, ringId) {
+    const r = Math.max(10, cfg.radius);
+    const text = (cfg.text || '').trim();
+    if (!text) return;
+
+    let defs = svg.querySelector('defs');
+    if (!defs) {
+      defs = document.createElementNS(NS, 'defs');
+      svg.appendChild(defs);
+    }
+
+    const pathId = `arc-path-${ringId}`;
+    // Remove old path with same id
+    const old = defs.querySelector('#' + pathId);
+    if (old) old.remove();
+
+    // Build full circle path. Start at cfg.angle, sweep direction = cfg.direction.
+    // For textPath, the path direction is the direction text flows.
+    const startRad = cfg.angle * Math.PI / 180;
+    const sx = CENTER + r * Math.cos(startRad);
+    const sy = CENTER + r * Math.sin(startRad);
+    const midAngle = cfg.angle + 180;
+    const midRad = midAngle * Math.PI / 180;
+    const mx = CENTER + r * Math.cos(midRad);
+    const my = CENTER + r * Math.sin(midRad);
+    const sweep = cfg.direction === 'cw' ? 1 : 0;
+    // Two semicircle arcs to form a full circle (single arc can't represent 360°)
+    const d = `M ${sx.toFixed(3)} ${sy.toFixed(3)} A ${r} ${r} 0 1 ${sweep} ${mx.toFixed(3)} ${my.toFixed(3)} A ${r} ${r} 0 1 ${sweep} ${sx.toFixed(3)} ${sy.toFixed(3)}`;
+
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('id', pathId);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    defs.appendChild(path);
+
+    const textEl = document.createElementNS(NS, 'text');
+    textEl.setAttribute('font-family', `'${cfg.font}', serif`);
+    textEl.setAttribute('font-size', cfg.size);
+    textEl.setAttribute('fill', cfg.textColor);
+    if (cfg.stroke > 0) {
+      textEl.setAttribute('stroke', cfg.textColor);
+      textEl.setAttribute('stroke-width', cfg.stroke);
+      textEl.setAttribute('paint-order', 'stroke');
+      textEl.setAttribute('stroke-linejoin', 'round');
+    }
+    if (cfg.spacing) {
+      textEl.setAttribute('letter-spacing', cfg.spacing);
+    }
+
+    const tp = document.createElementNS(NS, 'textPath');
+    tp.setAttribute('href', `#${pathId}`);
+    tp.setAttribute('startOffset', '0%');
+    tp.textContent = text;
+    textEl.appendChild(tp);
+
+    svg.appendChild(textEl);
+  }
+
+  function renderRing(cfg, ringId) {
+    if (cfg.layout === 'arc') {
+      renderRingArc(cfg, ringId);
+    } else {
+      renderRingLetter(cfg);
+    }
+  }
+
+  function render() {
+    svg.innerHTML = '';
+
+    // Outer background fills the whole preview disc (matches preview-box size)
+    // so the visible circle stays in sync with the preview-box edge.
+    const bg = document.createElementNS(NS, 'circle');
+    bg.setAttribute('cx', CENTER);
+    bg.setAttribute('cy', CENTER);
+    bg.setAttribute('r', SIZE / 2);
+    bg.setAttribute('fill', ringState.outer.bgColor);
+    svg.appendChild(bg);
+
+    if (ringState.inner.enabled) {
+      const innerR = Math.max(10, ringState.inner.radius);
+      const innerBg = document.createElementNS(NS, 'circle');
+      innerBg.setAttribute('cx', CENTER);
+      innerBg.setAttribute('cy', CENTER);
+      innerBg.setAttribute('r', innerR);
+      innerBg.setAttribute('fill', ringState.inner.bgColor);
+      svg.appendChild(innerBg);
+    }
+
+    renderRing(ringState.outer, 'outer');
+    if (ringState.inner.enabled) {
+      renderRing(ringState.inner, 'inner');
+    }
+  }
+
+  // Update visibility of conditional fields based on layout / distribute
+  function updateFieldVisibility(ring) {
+    const cfg = ringState[ring];
+    const pane = document.querySelector(`[data-pane="${ring}"]`);
+    pane.querySelectorAll('[data-show="letter"]').forEach(el => {
+      el.classList.toggle('disabled-field', cfg.layout !== 'letter');
+    });
+    pane.querySelectorAll('[data-show="letter-step"]').forEach(el => {
+      const show = cfg.layout === 'letter' && cfg.distribute === 'step';
+      el.classList.toggle('disabled-field', !show);
+    });
+  }
+
+  // Wire up generic inputs
+  document.querySelectorAll('[data-ring]').forEach(el => {
+    const ring = el.dataset.ring;
+    const key = el.dataset.key;
+    const tag = el.tagName.toLowerCase();
+
+    if (tag === 'input' && el.type === 'text') {
+      el.addEventListener('input', () => { ringState[ring][key] = el.value; render(); });
+    } else if (tag === 'select') {
+      el.addEventListener('change', () => { ringState[ring][key] = el.value; render(); });
+    } else if (tag === 'input' && el.type === 'range') {
+      el.addEventListener('input', () => {
+        const v = parseFloat(el.value);
+        ringState[ring][key] = v;
+        const valEl = document.querySelector(`[data-val="${ring}-${key}"]`);
+        if (valEl) {
+          if (key === 'angle' || key === 'letterAngle') valEl.textContent = v + '°';
+          else if (key === 'stretchX' || key === 'stretchY') valEl.textContent = v.toFixed(1);
+          else valEl.textContent = v;
+        }
+        render();
+      });
+    } else if (tag === 'input' && el.type === 'color') {
+      el.addEventListener('input', () => { ringState[ring][key] = el.value; render(); });
+    } else if (tag === 'div' && el.classList.contains('toggle-group')) {
+      el.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          el.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          ringState[ring][key] = btn.dataset.val;
+          updateFieldVisibility(ring);
+          render();
+        });
+      });
+    }
+  });
+
+  // Tab switching
+  document.querySelectorAll('.tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.ring-pane').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[data-pane="${btn.dataset.tab}"]`).classList.add('active');
+    });
+  });
+
+  // Inner ring enable toggle
+  $('innerEnabled').addEventListener('change', e => {
+    ringState.inner.enabled = e.target.checked;
+    $('innerBody').classList.toggle('disabled-pane', !e.target.checked);
+    render();
+  });
+
+  // ---- Font inlining for export ----
+  // Fetches every @font-face source used by the current rings and converts
+  // them to base64 data URLs so the exported SVG/PNG renders identically
+  // to the preview, even when opened offline or rendered on a canvas.
+  function fetchAsDataURL(url) {
+    return fetch(url)
+      .then(res => res.blob())
+      .then(blob => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }));
+  }
+
+  // Walk document.styleSheets and Google Fonts <link> to collect @font-face
+  // rules for the supplied font-family names, with all url() sources inlined.
+  async function collectInlinedFontCSS(usedFonts) {
+    let css = '';
+
+    // 1. styleSheets (covers our local @font-face + injected custom fonts)
+    for (const sheet of Array.from(document.styleSheets)) {
+      let rules;
+      try { rules = sheet.cssRules || sheet.rules; } catch (e) { continue; }
+      if (!rules) continue;
+      for (const rule of Array.from(rules)) {
+        if (rule.type !== CSSRule.FONT_FACE_RULE) continue;
+        const family = (rule.style.getPropertyValue('font-family') || '').replace(/['"]/g, '').trim();
+        if (!usedFonts.has(family)) continue;
+        const srcVal = rule.style.getPropertyValue('src') || '';
+        const urlMatch = srcVal.match(/url\(\s*['"]?([^'")]+)['"]?\s*\)/);
+        if (!urlMatch) { css += rule.cssText + '\n'; continue; }
+        const fontUrl = urlMatch[1];
+        // Already a data URL — keep as-is
+        if (fontUrl.startsWith('data:')) { css += rule.cssText + '\n'; continue; }
+        try {
+          const dataUrl = await fetchAsDataURL(fontUrl);
+          const formatMatch = srcVal.match(/format\(\s*['"]?([^'")]+)['"]?\s*\)/);
+          const fmt = formatMatch ? formatMatch[1] : 'truetype';
+          css += `@font-face { font-family: '${family}'; src: url('${dataUrl}') format('${fmt}'); }\n`;
+        } catch (e) {
+          css += rule.cssText + '\n';
+        }
+      }
+    }
+
+    // 2. Google Fonts <link> stylesheets — fetch CSS, parse @font-face, inline font files
+    for (const link of Array.from(document.querySelectorAll('link[rel="stylesheet"][href*="fonts.googleapis.com"]'))) {
+      let text;
+      try {
+        // Re-fetch with a desktop UA to get ttf-compatible CSS that canvas can decode
+        const res = await fetch(link.href, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        text = await res.text();
+      } catch (e) { continue; }
+      const fontFaceRegex = /@font-face\s*\{[^}]+\}/g;
+      let m;
+      while ((m = fontFaceRegex.exec(text)) !== null) {
+        const ruleText = m[0];
+        const famMatch = ruleText.match(/font-family:\s*['"]?([^'";]+)['"]?/);
+        if (!famMatch) continue;
+        const family = famMatch[1].trim();
+        if (!usedFonts.has(family)) continue;
+        const urlMatch = ruleText.match(/url\(([^)]+)\)/);
+        if (!urlMatch) { css += ruleText + '\n'; continue; }
+        const fontUrl = urlMatch[1].replace(/['"]/g, '');
+        try {
+          const dataUrl = await fetchAsDataURL(fontUrl);
+          css += ruleText.replace(urlMatch[1], `'${dataUrl}'`) + '\n';
+        } catch (e) {
+          css += ruleText + '\n';
+        }
+      }
+    }
+
+    return css;
+  }
+
+  function usedFontSet() {
+    const set = new Set([ringState.outer.font]);
+    if (ringState.inner.enabled) set.add(ringState.inner.font);
+    return set;
+  }
+
+  async function buildExportSVG() {
+    const clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', NS);
+    clone.setAttribute('width', SIZE);
+    clone.setAttribute('height', SIZE);
+    // Inline fonts so the SVG is portable and renders the same everywhere.
+    const fontCSS = await collectInlinedFontCSS(usedFontSet());
+    if (fontCSS) {
+      const style = document.createElementNS(NS, 'style');
+      style.setAttribute('type', 'text/css');
+      style.textContent = fontCSS;
+      clone.insertBefore(style, clone.firstChild);
+    }
+    return clone;
+  }
+
+  async function downloadSVG() {
+    const clone = await buildExportSVG();
+    const svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(clone);
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'gothic-ring.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function downloadPNG() {
+    const clone = await buildExportSVG();
+    const svgStr = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      // Give the embedded @font-face rules time to finish loading inside the
+      // SVG image before rasterising; otherwise canvas draws with fallback fonts.
+      setTimeout(() => {
+        const canvas = document.createElement('canvas');
+        const scale = 2;
+        canvas.width = SIZE * scale;
+        canvas.height = SIZE * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = ringState.outer.bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => {
+          const pngUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = pngUrl;
+          a.download = 'gothic-ring.png';
+          a.click();
+          URL.revokeObjectURL(pngUrl);
+        }, 'image/png');
+      }, 600);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      alert('PNG export failed. Try SVG export instead.');
+    };
+    img.src = url;
+  }
+
+  $('downloadPng').addEventListener('click', downloadPNG);
+  $('downloadSvg').addEventListener('click', downloadSVG);
+
+  updateFieldVisibility('outer');
+  updateFieldVisibility('inner');
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(render);
+  } else {
+    setTimeout(render, 500);
+  }
+  render();
+})();
+</script>
+</body>
+</html>
